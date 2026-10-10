@@ -183,6 +183,10 @@ private:
   // Used for custom gpio configs that have joy assignments
   int gpio_prev_state[NUM_GPIO_PINS];
 
+  // Last user port DDR applied to the pins, or -1 to force the next
+  // SetupUserport() to reapply all pin modes.
+  int mUserportDDR;
+
   FrameBufferLayer fbl[FB_NUM_LAYERS];
 };
 
