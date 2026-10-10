@@ -1,0 +1,50 @@
+# Fork-only: builds the Pi 3 kernels on every push to the pimmodore branch,
+# so breakage shows up before tagging a release. Releases are made by the
+# upstream workflow (c-cpp.yml) when a v* tag is pushed.
+name: Pimmodore build
+
+on:
+  push:
+    branches:
+      - pimmodore
+  pull_request:
+    branches:
+      - pimmodore
+  workflow_dispatch:
+
+jobs:
+  build-pi3:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install dependencies
+        run: |
+             sudo apt-get update
+             sudo apt-get install -y build-essential automake autoconf libtool pkg-config autoconf-archive autotools-dev xa65 make cmake automake m4 bison byacc flex texinfo
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Cache toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/bmc64/toolchains
+          key: bmc64-toolchains-${{ hashFiles('get_gnu_toolchain.sh') }}
+
+      - name: Build pi3
+        run: |
+             ./make_all.sh pi3
+             ./make_machines.sh pi3
+
+      - name: Check all machines were built
+        run: |
+             ls -l kernel8-32.img.*
+             test "$(ls kernel8-32.img.* | wc -l)" = 6
+
+      - name: Upload kernels
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernels-pi3-${{ github.sha }}
+          path: kernel8-32.img.*
