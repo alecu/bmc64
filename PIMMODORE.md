@@ -148,6 +148,12 @@ they prefer the `pimmodore` name or a generic one (e.g. `keyboard_mode_gpio`).
 
 ## Open questions
 
-- Is the Plus/4 really meant to use the C64 keyboard mode on a Keymmodore?
 - Does the Keymmodore firmware need the Teensy++ 2.0 build from
   slagoela/Keymmodore-64, or does current Keymmodore firmware read these pins?
+
+### Answered
+
+- **Plus/4 keyboard mode:** the Plus/4 uses the C64 keyboard mode. That's
+  what the code does.
+- **Pi 4:** not pursued. Upstream's `docs/SCOPE.md` lists Raspberry Pi 4 and
+  later as out of scope, and releases only include pi0, pi2 and pi3.
