@@ -130,6 +130,7 @@ struct wifi_access_point;
 #define NO_FIXED_PURPOSE_2_INDEX          20 // GPIO 3
 #define NO_FIXED_PURPOSE_3_INDEX          21 // GPIO 9
 #define NO_FIXED_PURPOSE_4_INDEX          22 // GPIO 10
+#define NO_FIXED_PURPOSE_5_INDEX          23 // GPIO 11
 
 // Used as indices into the joystickPins arrays
 #define JOY_UP    0

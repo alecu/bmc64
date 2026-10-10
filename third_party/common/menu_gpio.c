@@ -40,7 +40,7 @@
 // in an init method instead of this duplicated list.
 int custom_gpio_pins[NUM_GPIO_PINS] = {
     5, 20, 19, 16, 13, 6, 12, 26, 8, 25, 24,
-    18, 23, 27, 17, 22, 4, 7, 21, 2, 3, 9, 10 };
+    18, 23, 27, 17, 22, 4, 7, 21, 2, 3, 9, 10, 11 };
 
 #define NUM_GPIO_BINDINGS 38
 
@@ -97,6 +97,12 @@ void build_gpio_menu(struct menu_item *root) {
      item = ui_menu_add_multiple_choice(i, root, "");
      item->num_choices = NUM_GPIO_BINDINGS;
      sprintf (item->name, "GPIO%02d Binding", custom_gpio_pins[i]);
+     if (circle_pimmodore_enabled() && IS_PIMMODORE_PIN_INDEX(i)) {
+       // Driven as an output, so it can't be bound. The saved binding is
+       // kept for when Pimmodore support is turned off again.
+       sprintf (item->name, "GPIO%02d Used by Pimmodore", custom_gpio_pins[i]);
+       item->disabled = 1;
+     }
 
      for (int j = 0; j < NUM_GPIO_BINDINGS; j++) {
         // Lower = func, Upper = bank arg

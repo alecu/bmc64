@@ -47,7 +47,23 @@
 #define MAX_USB_DEVICES 4
 #define MAX_JOY_PORTS 4
 
-#define NUM_GPIO_PINS 23
+#define NUM_GPIO_PINS 24
+
+// Pimmodore support (enable_pimmodore=true in cmdline.txt): GPIO 9, 10 and 11
+// (pin indices 21, 22, 23) become outputs that tell a Keymmodore keyboard
+// controller which keyboard mode to use. See PIMMODORE_MODE_*.
+#define GPIO_PIMMODORE_P0_INDEX 21 // GPIO 9, mode bit 0
+#define GPIO_PIMMODORE_P1_INDEX 22 // GPIO 10, mode bit 1
+#define GPIO_PIMMODORE_P2_INDEX 23 // GPIO 11, mode bit 2
+#define IS_PIMMODORE_PIN_INDEX(i) \
+  ((i) >= GPIO_PIMMODORE_P0_INDEX && (i) <= GPIO_PIMMODORE_P2_INDEX)
+
+// Keyboard modes sent on the Pimmodore pins.
+#define PIMMODORE_MODE_PC 0
+#define PIMMODORE_MODE_C64 1
+#define PIMMODORE_MODE_C128 2
+#define PIMMODORE_MODE_PET_BUSINESS 3
+#define PIMMODORE_MODE_PET_GRAPHICS 4
 
 #define MACHINE_TIMING_NTSC_HDMI 0
 #define MACHINE_TIMING_PAL_HDMI 1
@@ -304,6 +320,7 @@ extern int circle_get_model();
 extern unsigned circle_get_arm_clock();
 extern int circle_gpio_enabled();
 extern int circle_gpio_outputs_enabled();
+extern int circle_pimmodore_enabled();
 
 extern int circle_sound_init(const char *param, int *speed, int *fragsize,
                         int *fragnr, int *channels);
@@ -405,6 +422,10 @@ extern void emu_profile_start_interrupt(const char *id, int once);
 
 // Ask emulator what the current gpio config index is.
 extern int emu_get_gpio_config(void);
+
+// Ask emulator which PIMMODORE_MODE_ fits the machine being emulated, or -1
+// if the machine isn't known yet.
+extern int emu_get_pimmodore_mode(void);
 
 // Set a joystick latch value from a USB device. Interrupt safe.
 extern void emu_set_joy_usb_interrupt(unsigned device, int value);

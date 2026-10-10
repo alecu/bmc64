@@ -62,6 +62,7 @@ This guide covers installing, configuring, and using BMC64, including machine se
     - [GPIO Config 3 : Waveshare Game HAT](#gpio-config-3--waveshare-game-hat)
     - [GPIO Config 4 : Userport and Joysticks](#gpio-config-4--userport-and-joysticks)
     - [GPIO Config 5 : Custom Defined](#gpio-config-5--custom-defined)
+  - [Keymmodore Keyboard Mode Outputs](#keymmodore-keyboard-mode-outputs)
 - [Logging](#logging)
   - [Logging Configuration](#logging-configuration)
   - [UART Debugging](#uart-debugging)
@@ -902,6 +903,23 @@ When used as inputs, the pins use pull-up resistors (just like the real C64) so 
 ### GPIO Config 5 : Custom Defined
 
 If the pre-defined GPIO configurations don't suit your needs, you can define your own GPIO mappings if you wish.  Use the 'Configure Custom GPIO' menu option under 'Prefs'.
+
+## Keymmodore Keyboard Mode Outputs
+
+A [Keymmodore](https://www.keymmodore.com/) connects an original Commodore keyboard over USB and has a keyboard mode for each machine. BMC64 can tell it which machine is being emulated, so the keyboard mode follows when you switch machines or change the PET model, instead of being switched by hand. This needs Keymmodore firmware that reads these pins.
+
+Add `enable_pimmodore=true` to cmdline.txt. GPIO 9, 10 and 11 then become outputs carrying a 3-bit mode number (GPIO 9 is bit 0):
+
+| Mode | Machines |
+|---|---|
+| 1 | C64, VIC20, Plus/4 |
+| 2 | C128 |
+| 3 | PET with a business keyboard |
+| 4 | PET with a graphics keyboard |
+
+These pins are not used by GPIO configs 1 to 4, so they can be combined with any of them. With 'Custom Defined', the three pins show as 'Used by Pimmodore' and can't be bound. This option has no effect when DPI video is enabled.
+
+***WARNING***: Only enable this when GPIO 9, 10 and 11 are wired to something that expects outputs. They are driven at 3.3V, and connecting them to another output or to ground can damage the GPIO pins.
 
 # Logging
 
