@@ -438,7 +438,7 @@ CKernel::CKernel(void)
 #endif
       mNumJoy(emu_get_num_joysticks()),
       mVolume(100), mNumCoresComplete(0),
-      mNeedSoundInit(false), mNumSoundChannels(1) {
+      mNeedSoundInit(false), mNumSoundChannels(1), mUserportDDR(-1) {
   static_kernel = this;
   memset(key_states, 0, sizeof(key_states));
   memset(mod_states, 0, sizeof(mod_states));
@@ -1376,6 +1376,13 @@ void CKernel::SetupUserport() {
   // should reflect this.
   if (circle_gpio_outputs_enabled()) {
     uint8_t ddr = circle_get_userport_ddr();
+    // This runs every frame. Only touch the pins when the DDR changed:
+    // SetMode() drives output pins LOW and busy-waits to set pull-ups, so
+    // reapplying it every frame glitches the outputs and wastes time.
+    if (ddr == mUserportDDR) {
+      return;
+    }
+    mUserportDDR = ddr;
     for (int i = 0; i < 8; i++) {
       uint8_t bit_pos = 1<<i;
       uint8_t ddr_value = ddr & bit_pos;
@@ -1942,6 +1949,7 @@ void CKernel::circle_reset_gpio(int gpio_config) {
         config_3_joystickPins1[i]->SetMode(GPIOModeInputPullUp);
         config_3_joystickPins2[i]->SetMode(GPIOModeInputPullUp);
       }
+      mUserportDDR = -1;
       SetupUserport();
       break;
     default:
