@@ -325,6 +325,10 @@ int circle_gpio_outputs_enabled() {
   return static_kernel->circle_gpio_outputs_enabled();
 }
 
+int circle_pimmodore_enabled() {
+  return static_kernel->circle_pimmodore_enabled();
+}
+
 void circle_kernel_core_init_complete(int core) {
   static_kernel->circle_kernel_core_init_complete(core);
 }
@@ -438,7 +442,8 @@ CKernel::CKernel(void)
 #endif
       mNumJoy(emu_get_num_joysticks()),
       mVolume(100), mNumCoresComplete(0),
-      mNeedSoundInit(false), mNumSoundChannels(1), mUserportDDR(-1) {
+      mNeedSoundInit(false), mNumSoundChannels(1), mUserportDDR(-1),
+      mPimmodoreMode(-1) {
   static_kernel = this;
   memset(key_states, 0, sizeof(key_states));
   memset(mod_states, 0, sizeof(mod_states));
@@ -1255,7 +1260,12 @@ void CKernel::ReadCustomGPIO() {
   int ui_activated = emu_is_ui_activated();
   int port_is_gpio_joy[2] = {0,0};
 
+  int pimmodore_enabled = circle_pimmodore_enabled();
+
   for (i = 0 ; i < NUM_GPIO_PINS; i++) {
+    if (pimmodore_enabled && IS_PIMMODORE_PIN_INDEX(i)) {
+      continue;
+    }
     bank = gpio_bindings[i] >> 8;
     func = gpio_bindings[i] & 0xFF;
     if (bank > 0) {
@@ -1368,6 +1378,30 @@ void CKernel::ReadCustomGPIO() {
                          js_potx_2 == LOW,
                          js_poty_2 == LOW);
    }
+}
+
+// Drive the Pimmodore pins with the keyboard mode for the machine being
+// emulated. Runs every frame but only writes when the mode changes, so it
+// also follows PET model and keyboard changes made from the menu.
+void CKernel::UpdatePimmodoreGPIO() {
+  if (!circle_pimmodore_enabled()) {
+    return;
+  }
+
+  int mode = emu_get_pimmodore_mode();
+  if (mode < 0 || mode == mPimmodoreMode) {
+    return;
+  }
+
+  static const int pins[3] = {GPIO_PIMMODORE_P0_INDEX, GPIO_PIMMODORE_P1_INDEX,
+                              GPIO_PIMMODORE_P2_INDEX};
+  for (int bit = 0; bit < 3; bit++) {
+    if (mPimmodoreMode < 0) {
+      gpioPins[pins[bit]]->SetMode(GPIOModeOutput);
+    }
+    gpioPins[pins[bit]]->Write(mode & (1 << bit) ? HIGH : LOW);
+  }
+  mPimmodoreMode = mode;
 }
 
 // Configure user port DDR
@@ -1849,6 +1883,8 @@ void CKernel::circle_check_gpio() {
   // here, once per frame, and only sends when the lock state changed.
   UpdateKeyboardLEDs();
 
+  UpdatePimmodoreGPIO();
+
   int gpio_config = emu_get_gpio_config();
 
   switch(gpio_config) {
@@ -1933,6 +1969,8 @@ void CKernel::circle_check_gpio() {
 // Reset the state of the GPIO pins.
 // Needed when switching to and from GPIO_CONFIG_USERPORT
 void CKernel::circle_reset_gpio(int gpio_config) {
+  int pimmodore_enabled = circle_pimmodore_enabled();
+
   switch (gpio_config) {
     case GPIO_CONFIG_NAV_JOY:
     case GPIO_CONFIG_KYB_JOY:
@@ -1941,6 +1979,10 @@ void CKernel::circle_reset_gpio(int gpio_config) {
       // Joystick and keyboard settings require all ports
       // to be inputs
       for (int i = 0; i < NUM_GPIO_PINS; i++) {
+        // The Pimmodore pins stay outputs.
+        if (pimmodore_enabled && IS_PIMMODORE_PIN_INDEX(i)) {
+          continue;
+        }
         gpioPins[i]->SetMode(GPIOModeInputPullUp);
       }
       break;
@@ -2141,6 +2183,11 @@ int CKernel::circle_gpio_enabled() {
 
 int CKernel::circle_gpio_outputs_enabled() {
   return !mViceOptions.DPIEnabled() && mViceOptions.GPIOOutputsEnabled();
+}
+
+int CKernel::circle_pimmodore_enabled() {
+  // DPI video uses the whole GPIO header.
+  return !mViceOptions.DPIEnabled() && mViceOptions.PimmodoreEnabled();
 }
 
 // Called by cores 1 and 2 after they are done initializing

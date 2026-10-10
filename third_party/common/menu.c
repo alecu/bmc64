@@ -5215,6 +5215,28 @@ int emu_get_gpio_config() {
   return gpio_config_item->choice_ints[gpio_config_item->value];
 }
 
+int emu_get_pimmodore_mode(void) {
+  int keyboard_type = 0;
+  switch (emux_machine_class) {
+  case BMC64_MACHINE_CLASS_UNKNOWN:
+    return -1;
+  case BMC64_MACHINE_CLASS_C64:
+  case BMC64_MACHINE_CLASS_VIC20:
+  case BMC64_MACHINE_CLASS_PLUS4:
+  case BMC64_MACHINE_CLASS_PLUS4EMU:
+    return PIMMODORE_MODE_C64;
+  case BMC64_MACHINE_CLASS_C128:
+    return PIMMODORE_MODE_C128;
+  case BMC64_MACHINE_CLASS_PET:
+    emux_get_int(Setting_KeyboardType, &keyboard_type);
+    return keyboard_type == EMUX_PET_KEYBOARD_GRAPHICS
+               ? PIMMODORE_MODE_PET_GRAPHICS
+               : PIMMODORE_MODE_PET_BUSINESS;
+  default:
+    return PIMMODORE_MODE_PC;
+  }
+}
+
 int emu_get_num_joysticks(void) {
   if (emux_machine_class == BMC64_MACHINE_CLASS_VIC20) {
     return 1;

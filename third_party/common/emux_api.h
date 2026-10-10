@@ -92,7 +92,12 @@ typedef enum {
   Setting_VideoSize, // PET
   Setting_VideoFilter,
   Setting_AutostartWarp,
+  Setting_KeyboardType, // PET
 } IntSetting;
+
+// PET Setting_KeyboardType for the graphics keyboard. Any other value is a
+// business keyboard. Matches KBD_TYPE_GRAPHICS_US in VICE's pet-resources.h.
+#define EMUX_PET_KEYBOARD_GRAPHICS 4
 
 typedef enum {
   Setting_FSDeviceNDir,

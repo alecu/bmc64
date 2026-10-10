@@ -35,7 +35,7 @@ ViceOptions::ViceOptions(void)
     : m_nMachineTiming(MACHINE_TIMING_PAL_HDMI),
       m_bDemoEnabled(false), m_bSerialEnabled(false),
       m_bFileLoggingEnabled(false),
-      m_bGPIOOutputsEnabled(false), m_nCyclesPerSecond(0),
+      m_bGPIOOutputsEnabled(false), m_bPimmodoreEnabled(false), m_nCyclesPerSecond(0),
       m_audioOut(VCHIQSoundDestinationAuto), m_bDPIEnabled(false),
       m_scaling_param_fbw{0,0}, m_scaling_param_fbh{0,0},
       m_scaling_param_sx{0,0}, m_scaling_param_sy{0,0},
@@ -116,6 +116,13 @@ ViceOptions::ViceOptions(void)
         m_bGPIOOutputsEnabled = true;
       } else {
         m_bGPIOOutputsEnabled = false;
+      }
+    } else if (strcmp(pOption, "enable_pimmodore") == 0) {
+      // Drive GPIO 9, 10 and 11 with the keyboard mode for a Keymmodore.
+      if (strcmp(pValue,"true") == 0 || strcmp(pValue, "1") == 0) {
+        m_bPimmodoreEnabled = true;
+      } else {
+        m_bPimmodoreEnabled = false;
       }
     } else if (strcmp(pOption, "disk_partition") == 0) {
       m_disk_partition = atoi(pValue);
@@ -219,6 +226,8 @@ bool ViceOptions::FileLoggingEnabled(void) const {
 }
 
 bool ViceOptions::GPIOOutputsEnabled(void) const { return m_bGPIOOutputsEnabled; }
+
+bool ViceOptions::PimmodoreEnabled(void) const { return m_bPimmodoreEnabled; }
 
 bool ViceOptions::DPIEnabled(void) const { return m_bDPIEnabled; }
 

@@ -109,6 +109,7 @@ public:
   int circle_get_model();
   int circle_gpio_enabled();
   int circle_gpio_outputs_enabled();
+  int circle_pimmodore_enabled();
   void circle_kernel_core_init_complete(int core);
   unsigned circle_get_arm_clock();
   void circle_get_fbl_dimensions(int layer, int *display_w, int *display_h,
@@ -155,6 +156,7 @@ private:
   void ScanKeyboard();
   void ReadJoystick(int device, int gpioConfig);
   void ReadCustomGPIO();
+  void UpdatePimmodoreGPIO();
   void SetupUserport();
   void ReadWriteUserport();
   ViceSound *mViceSound;
@@ -186,6 +188,9 @@ private:
   // Last user port DDR applied to the pins, or -1 to force the next
   // SetupUserport() to reapply all pin modes.
   int mUserportDDR;
+
+  // Keyboard mode last written to the Pimmodore pins, -1 if not set up yet.
+  int mPimmodoreMode;
 
   FrameBufferLayer fbl[FB_NUM_LAYERS];
 };
